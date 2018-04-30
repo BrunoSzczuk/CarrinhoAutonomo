@@ -25,11 +25,10 @@ public class Testecarrinhoautonomo {
         //Adiciona os participantes
         carrinhos.add(verde);
         carrinhos.add(vermeio);
-
         geraDestino(carrinhos);
         while (!isTerminou(carrinhos)) {
             for (Carrinho c : carrinhos) {
-                if (!c.chegou) {
+                if (!c.isChegou()) {
                     geraProximaPosicao(c);
                 }
                 System.out.println(c.toString());
@@ -56,35 +55,41 @@ public class Testecarrinhoautonomo {
     }
 
     static boolean isTerminou(ArrayList<Carrinho> xd) {
+        boolean status = true;
         for (Carrinho c : xd) {
             if (!Arrays.equals(c.getDestino(), c.getOrigem())) {
+                status = false;
+            }else{
                 c.setChegou(true);
-                return false;
             }
         }
-        return true;
+        return status;
     }
 
     static void geraProximaPosicao(Carrinho c) {
         ArrayList<int[][]> posicoesValidas = new ArrayList<>();
 
-        if (isPosicaoValida(c.getAnterior().length - 1, c.getAnterior().length == 0 ? 0 : c.getAnterior()[0].length - 1)) {
-            posicoesValidas.add(new int[c.getAnterior().length - 1][c.getAnterior().length == 0 ? 0 : c.getAnterior()[0].length - 1]);
-        } else if (isPosicaoValida(c.getAnterior().length - 1, c.getAnterior().length == 0 ? 0 : c.getAnterior()[0].length + 1)) {
-            posicoesValidas.add(new int[c.getAnterior().length - 1][c.getAnterior().length == 0 ? 0 : c.getAnterior()[0].length + 1]);
-        } else if (isPosicaoValida(c.getAnterior().length + 1, c.getAnterior().length == 0 ? 0 : c.getAnterior()[0].length + 1)) {
-            posicoesValidas.add(new int[c.getAnterior().length + 1][c.getAnterior().length == 0 ? 0 : c.getAnterior()[0].length + 1]);
-        } else if (isPosicaoValida(c.getAnterior().length + 1, c.getAnterior().length == 0 ? 0 : c.getAnterior()[0].length - 1)) {
-            posicoesValidas.add(new int[c.getAnterior().length + 1][c.getAnterior().length == 0 ? 0 : c.getAnterior()[0].length - 1]);
+        if (isPosicaoValida(c.getAnterior().length, c.getAnterior().length == 0 ? 0 : c.getAnterior()[0].length - 1)) {
+            posicoesValidas.add(new int[c.getAnterior().length][c.getAnterior().length == 0 ? 0 : c.getAnterior()[0].length - 1]);
+        }
+        if (isPosicaoValida(c.getAnterior().length, c.getAnterior().length == 0 ? 0 : c.getAnterior()[0].length + 1)) {
+            posicoesValidas.add(new int[c.getAnterior().length][c.getAnterior().length == 0 ? 0 : c.getAnterior()[0].length + 1]);
+        }
+        if (isPosicaoValida(c.getAnterior().length + 1, c.getAnterior().length == 0 ? 0 : c.getAnterior()[0].length)) {
+            posicoesValidas.add(new int[c.getAnterior().length + 1][c.getAnterior().length == 0 ? 0 : c.getAnterior()[0].length]);
+        }
+        if (isPosicaoValida(c.getAnterior().length - 1, c.getAnterior().length == 0 ? 0 : c.getAnterior()[0].length)) {
+            posicoesValidas.add(new int[c.getAnterior().length - 1][c.getAnterior().length == 0 ? 0 : c.getAnterior()[0].length]);
         }
         c.setAnterior(new int[c.getProximo().length][c.getProximo().length == 0 ? 0 : c.getProximo()[0].length]);
         int[][] x = posicoesValidas.get(new Random().nextInt(posicoesValidas.size()));
-        c.setProximo(new int[x.length][x.length == 0? 0: x[0].length]);
+        c.setProximo(new int[x.length][x.length == 0 ? 0 : x[0].length]);
     }
 
     static boolean isPosicaoValida(int x, int y) {
         try {
-            if (new int[x][y] != null) {
+            int[][] posicao = new int[x][y];
+            if ((posicao.length <= CAMPO.length) && ((posicao.length == 0 ? 0 : posicao[0].length) <= CAMPO[0].length)) {
                 return true;
             }
         } catch (Exception e) {
