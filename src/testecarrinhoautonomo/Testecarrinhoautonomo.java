@@ -6,7 +6,6 @@
 package testecarrinhoautonomo;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Random;
 
 /**
@@ -16,19 +15,20 @@ import java.util.Random;
 public class Testecarrinhoautonomo {
 
     private boolean vertical = false;
-    private static final int CAMPO[][] = new int[4][4]; //Tamanho da arena
-    static Carrinho verde = new Carrinho("Verde", new int[0][0]);
-    static Carrinho vermeio = new Carrinho("Vermeio", new int[4][4]);
+    private static final Posicao CAMPO = new Posicao(4, 4);//Tamanho da arena
+    static Carrinho verde = new Carrinho("Verde", new Posicao(0, 0));
+    static Carrinho vermeio = new Carrinho("Vermeio", new Posicao(4, 4));
     static ArrayList<Carrinho> carrinhos = new ArrayList<>();
 
     public static void main(String[] args) {
         //Adiciona os participantes
         carrinhos.add(verde);
         carrinhos.add(vermeio);
+
         geraDestino(carrinhos);
         while (!isTerminou(carrinhos)) {
             for (Carrinho c : carrinhos) {
-                if (!c.isChegou()) {
+                if (!c.chegou) {
                     geraProximaPosicao(c);
                 }
                 System.out.println(c.toString());
@@ -40,61 +40,50 @@ public class Testecarrinhoautonomo {
         int x = 0;
         int y = 0;
         for (Carrinho c : xd) {
-            x += c.getOrigem().length;
-            if (c.getOrigem().length == 0) {
+            x += c.getOrigem().getX();
+            if (c.getOrigem().getX() == 0) {
                 y += 0;
             } else {
-                y += c.getOrigem().length == 0 ? 0 : c.getOrigem()[0].length;
+                y += c.getOrigem().getX() == 0 ? 0 : c.getOrigem().getY();
             }
         }
         //Encontra o centro entre todos os participantes para reduzir o custo
-        int[][] destino = new int[(int) x / 2][(int) y / 2];
+        Posicao destino = new Posicao((int) x / 2, (int) y / 2);
         for (Carrinho c : xd) {
             c.setDestino(destino);
         }
     }
 
     static boolean isTerminou(ArrayList<Carrinho> xd) {
-        boolean status = true;
+        boolean x = true;
         for (Carrinho c : xd) {
-            if (!Arrays.equals(c.getDestino(), c.getOrigem())) {
-                status = false;
-            }else{
+            if ((c.getDestino().equals(c.getAtual()))) {
                 c.setChegou(true);
+            } else {
+                x = false;
             }
         }
-        return status;
+        return x;
     }
 
     static void geraProximaPosicao(Carrinho c) {
-        ArrayList<int[][]> posicoesValidas = new ArrayList<>();
+        ArrayList<Posicao> posicoesValidas = new ArrayList<Posicao>();
+        c.setAtual(c.getProximo());
 
-        if (isPosicaoValida(c.getAnterior().length, c.getAnterior().length == 0 ? 0 : c.getAnterior()[0].length - 1)) {
-            posicoesValidas.add(new int[c.getAnterior().length][c.getAnterior().length == 0 ? 0 : c.getAnterior()[0].length - 1]);
+        if (isPosicaoValida(new Posicao(c.getAtual().getX() - 1, c.getAtual().getY()))) {
+            posicoesValidas.add(new Posicao(c.getAtual().getX() - 1, c.getAtual().getY()));
+        }  if (isPosicaoValida(new Posicao(c.getAtual().getX(), c.getAtual().getY() + 1))) {
+            posicoesValidas.add(new Posicao(c.getAtual().getX(), c.getAtual().getY() + 1));
+        }  if (isPosicaoValida(new Posicao(c.getAtual().getX() + 1, c.getAtual().getY()))) {
+            posicoesValidas.add(new Posicao(c.getAtual().getX() + 1, c.getAtual().getY()));
+        }  if (isPosicaoValida(new Posicao(c.getAtual().getX(), c.getAtual().getY() - 1))) {
+            posicoesValidas.add(new Posicao(c.getAtual().getX(), c.getAtual().getY() - 1));
         }
-        if (isPosicaoValida(c.getAnterior().length, c.getAnterior().length == 0 ? 0 : c.getAnterior()[0].length + 1)) {
-            posicoesValidas.add(new int[c.getAnterior().length][c.getAnterior().length == 0 ? 0 : c.getAnterior()[0].length + 1]);
-        }
-        if (isPosicaoValida(c.getAnterior().length + 1, c.getAnterior().length == 0 ? 0 : c.getAnterior()[0].length)) {
-            posicoesValidas.add(new int[c.getAnterior().length + 1][c.getAnterior().length == 0 ? 0 : c.getAnterior()[0].length]);
-        }
-        if (isPosicaoValida(c.getAnterior().length - 1, c.getAnterior().length == 0 ? 0 : c.getAnterior()[0].length)) {
-            posicoesValidas.add(new int[c.getAnterior().length - 1][c.getAnterior().length == 0 ? 0 : c.getAnterior()[0].length]);
-        }
-        c.setAnterior(new int[c.getProximo().length][c.getProximo().length == 0 ? 0 : c.getProximo()[0].length]);
-        int[][] x = posicoesValidas.get(new Random().nextInt(posicoesValidas.size()));
-        c.setProximo(new int[x.length][x.length == 0 ? 0 : x[0].length]);
+        c.setProximo(posicoesValidas.get(new Random().nextInt(posicoesValidas.size())));
+        //System.out.println("Posição gerada: " + c);
     }
 
-    static boolean isPosicaoValida(int x, int y) {
-        try {
-            int[][] posicao = new int[x][y];
-            if ((posicao.length <= CAMPO.length) && ((posicao.length == 0 ? 0 : posicao[0].length) <= CAMPO[0].length)) {
-                return true;
-            }
-        } catch (Exception e) {
-
-        }
-        return false;
+    static boolean isPosicaoValida(Posicao p) {
+        return (p.getX() >= 0 && p.getX() <= CAMPO.getX()) && (p.getY() >= 0 && p.getY() <= CAMPO.getY());
     }
 }

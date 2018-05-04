@@ -14,33 +14,31 @@ import java.util.Objects;
 public class Carrinho {
 
     String nome;
-    int[][] destino;
-    int[][] proximo;
-    int[][] origem;
-    int[][] anterior;
+    Posicao destino;
+    Posicao proximo;
+    Posicao origem;
+    Posicao atual;
     boolean chegou;
 
-    public Carrinho(String nome, int[][] origem) {
+    public Carrinho() {
+        destino = new Posicao();
+        proximo = new Posicao();
+        origem = new Posicao();
+        atual = new Posicao();
+        nome = "";
+    }
+
+    public Carrinho(String nome, Posicao origem) {
+        destino = new Posicao();
+        proximo = new Posicao();
+        atual = new Posicao();
         this.nome = nome;
         this.origem = origem;
-        this.anterior = origem;
-        this.destino = new int[0][0];
-        this.proximo = new int[0][0];
-    }
-    public Carrinho(Carrinho c){
-        this.nome = c.getNome();
-        this.origem = c.getOrigem();
-        this.anterior = c.getOrigem();
-        this.destino = new int[0][0];
-        this.proximo = new int[0][0];
     }
 
-    public int[][] getAnterior() {
-        return anterior;
-    }
-
-    public void setAnterior(int[][] anterior) {
-        this.anterior = anterior;
+    @Override
+    public String toString() {
+        return "Carrinho{" + "nome=" + nome + ", destino=" + destino + ", proximo=" + proximo + ", origem=" + origem + ", atual=" + atual + ", chegou=" + chegou + '}';
     }
 
     public String getNome() {
@@ -51,6 +49,38 @@ public class Carrinho {
         this.nome = nome;
     }
 
+    public Posicao getDestino() {
+        return destino;
+    }
+
+    public void setDestino(Posicao destino) {
+        this.destino = destino;
+    }
+
+    public Posicao getProximo() {
+        return proximo;
+    }
+
+    public void setProximo(Posicao proximo) {
+        this.proximo = proximo;
+    }
+
+    public Posicao getOrigem() {
+        return origem;
+    }
+
+    public void setOrigem(Posicao origem) {
+        this.origem = origem;
+    }
+
+    public Posicao getAtual() {
+        return atual;
+    }
+
+    public void setAtual(Posicao atual) {
+        this.atual = atual;
+    }
+
     public boolean isChegou() {
         return chegou;
     }
@@ -59,34 +89,14 @@ public class Carrinho {
         this.chegou = chegou;
     }
 
-    public int[][] getDestino() {
-        return destino;
-    }
-
-    public void setDestino(int[][] destino) {
-        this.destino = destino;
-    }
-
-    public int[][] getProximo() {
-        return proximo;
-    }
-
-    public void setProximo(int[][] proximo) {
-        this.proximo = proximo;
-    }
-
-    public int[][] getOrigem() {
-        return origem;
-    }
-
-    public void setOrigem(int[][] origem) {
-        this.origem = origem;
-    }
-
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 79 * hash + Objects.hashCode(this.nome);
+        int hash = 5;
+        hash = 23 * hash + Objects.hashCode(this.destino);
+        hash = 23 * hash + Objects.hashCode(this.proximo);
+        hash = 23 * hash + Objects.hashCode(this.origem);
+        hash = 23 * hash + Objects.hashCode(this.atual);
+        hash = 23 * hash + (this.chegou ? 1 : 0);
         return hash;
     }
 
@@ -102,17 +112,22 @@ public class Carrinho {
         if (!Objects.equals(this.nome, other.nome)) {
             return false;
         }
+        if (!Objects.equals(this.destino, other.destino)) {
+            return false;
+        }
+        if (!Objects.equals(this.proximo, other.proximo)) {
+            return false;
+        }
+        if (!Objects.equals(this.origem, other.origem)) {
+            return false;
+        }
+        if (!Objects.equals(this.atual, other.atual)) {
+            return false;
+        }
+        if (this.chegou != other.chegou) {
+            return false;
+        }
         return true;
-    }
-
-    private String formataArray(int[][] xd) {
-        return "[" + xd.length + "," + (xd.length == 0 ? 0 : xd[0].length) + "]";
-    }
-
-    @Override
-    public String toString() {
-        return "Carrinho{" + "nome=" + nome + ", destino=" + formataArray(destino) + ", anterior=" + formataArray(anterior) + "proximo=" + formataArray(proximo)
-                + ", origem=" + formataArray(origem) + '}';
     }
 
 }
