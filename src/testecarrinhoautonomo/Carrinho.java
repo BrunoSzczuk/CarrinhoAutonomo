@@ -29,13 +29,14 @@ public class Carrinho {
     }
 
     public Carrinho(String nome, Posicao origem) {
-        destino = new Posicao();
-        proximo = new Posicao();
-        atual = new Posicao();
         this.nome = nome;
         this.origem = origem;
+        destino = new Posicao();
+        proximo = origem;
+        atual = origem;
     }
 
+    
     @Override
     public String toString() {
         return "Carrinho{" + "nome=" + nome + ", destino=" + destino + ", proximo=" + proximo + ", origem=" + origem + ", atual=" + atual + ", chegou=" + chegou + '}';

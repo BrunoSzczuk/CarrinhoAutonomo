@@ -11,8 +11,8 @@ package testecarrinhoautonomo;
  */
 public class Posicao {
 
-    int x;
-    int y;
+    private int x;
+    private int y;
 
     public Posicao(int x, int y) {
         this.x = x;
