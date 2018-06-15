@@ -259,7 +259,8 @@ void loop()
 
 
   //Codigo Bruno Szczuk
-  while (enviaPosicao(hetero.atual.linha, hetero.atual.coluna)) {
+  while (enviaPosicao(hetero.atual)) {
+    hetero.destino = procuraMelhorPosicao(hetero.atual, josegay.atual);
     
   }
 
@@ -496,24 +497,52 @@ void robot_stop(unsigned char v)
 
 } //end robot stop
 
-Posicao procuraMelhorPosicao(Posicao minha, Posicao inimigo){
-  
+Posicao procuraMelhorPosicao(Posicao minha, Posicao inimigo) {
+  Posicao melhor = minha;
+  int diferenca = verificaDiferenca( minha, inimigo);
+  if (posicaoValida( {minha.linha - 1, minha.coluna } )) {
+    if (verificaDiferenca({minha.linha - 1, minha.coluna }, inimigo) > diferenca) {
+      melhor = {minha.linha - 1, minha.coluna };
+      diferenca = verificaDiferenca({minha.linha - 1, minha.coluna }, inimigo);
+    }
+  } else if (posicaoValida( {minha.linha , minha.coluna - 1} )) {
+    if (verificaDiferenca({minha.linha, minha.coluna - 1 }, inimigo) > diferenca) {
+      melhor = {minha.linha, minha.coluna - 1};
+      diferenca = verificaDiferenca({minha.linha , minha.coluna - 1}, inimigo);
+    }
+  } else if (posicaoValida( {minha.linha + 1 , minha.coluna } )) {
+    if (verificaDiferenca({minha.linha + 1, minha.coluna }, inimigo) > diferenca) {
+      melhor = {minha.linha + 1, minha.coluna};
+      diferenca = verificaDiferenca({minha.linha + 1 , minha.coluna }, inimigo);
+    }
+  } else if (posicaoValida( {minha.linha , minha.coluna + 1 } )) {
+    if (verificaDiferenca({minha.linha, minha.coluna + 1 }, inimigo) > diferenca) {
+      melhor = {minha.linha, minha.coluna + 1};
+    }
+  }
+
+  return melhor;
 }
 
-boolean enviaPosicao(int linha, int coluna) {
+boolean enviaPosicao(Posicao p) {
   while (mySerial.read() != 100) {
-    mySerial.write(linha + 30);
+    mySerial.write(p.linha + 30);
     delay(50);
-    mySerial.write(coluna + 20);
+    mySerial.write(p.coluna + 20);
   }
   return false;
 }
 
-boolean posicaoValida(Posicao p){
+boolean posicaoValida(Posicao p) {
   return p.linha <= CAMPO.linha && p.linha > 0 && p.coluna <= CAMPO.coluna && p.coluna > 0;
 }
 
-int verificaDiferenca(Posicao minha, Posicao destino){
+int verificaDiferenca(Posicao minha, Posicao destino) {
   return abs((destino.linha - minha.linha)) + abs((destino.coluna - minha.coluna));
 }
+
+void movimentaDestino(Posicao p){
+  
+}
+
 
