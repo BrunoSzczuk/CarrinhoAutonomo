@@ -61,14 +61,13 @@ struct sensor {
 struct Posicao {
   int linha;
   int coluna;
-  int valor; // quão bom é o lugar
 };
 
 struct Carrinho {
-  String nome;
   Posicao destino;
-  Posicao passado[100];
+  //Posicao passado[100];
   Posicao atual;
+  char eixo;
 };
 
 
@@ -146,7 +145,7 @@ void calibrate() {
     sensor[i].minimo = 1000;
     sensor[i].maximo = 0;
   }
-  /* Serial.println("Iniciar Calibracao");
+   Serial.println("Iniciar Calibracao");
     for (sensor_aux = 0; sensor_aux < 8; sensor_aux++) {
      seleciona_sensor(sensor_aux);
      Serial.print("Sensor ");
@@ -158,7 +157,7 @@ void calibrate() {
        if (valor > sensor[sensor_aux].maximo) sensor[sensor_aux].maximo = valor;
 
      }
-    }*/
+    }
 }
 int quant_sensores_ativos() {
   int i, total = 0;
@@ -172,7 +171,7 @@ int quant_sensores_ativos() {
 void le_sensor(int i) {
   seleciona_sensor(i);
   sensor[i].valorlido = analogRead(sensorAnal);
-  Serial.println(sensor[i].valorlido);
+//  Serial.println(sensor[i].valorlido);
 }
 void le_linha() {
   int i;
@@ -248,7 +247,10 @@ void setup()
   mySerial.begin(9600);
   delay(3000);
   pausarPID = false;
-  hetero.atual = {1, 1, 0};
+  hetero.atual = {1, 1};
+  hetero.eixo = 'S';
+  hetero.destino = {1, 2};
+  direcao_caso_cruzamento(reto);
 }
 void loop()
 {
@@ -257,18 +259,9 @@ void loop()
     int           KI = 10000; //2 bytes*/
   byte v;
 
-
-  //Codigo Bruno Szczuk
-  while (enviaPosicao(hetero.atual)) {
-    hetero.destino = procuraMelhorPosicao(hetero.atual, josegay.atual);
-    
-  }
-
-
-
-  //Codigo antigo
-  Serial.write(5000);
-  if (mySerial.available()) {
+  /*Codigo antigo
+    Serial.write(5000);
+    if (mySerial.available()) {
     robot_stop(255);
     pausarPID = true;
     //Serial.print(indice);
@@ -310,17 +303,32 @@ void loop()
       indice = 0;
 
     }
-  }
+    }*/
 
   if (!pausarPID)  PID();
 
   if (verificar_cruzamento) {
     if (sobre_cruzamento()) {
-      //mySerial.write(cruzamento);
-      direcao_caso_cruzamento(direcoes[cruzamento]);
-      cruzamento++;
-      //  direcao_caso_cruzamento(esquerda);
-      if (cruzamento == 10) cruzamento = 0;
+    //  recebePosicao(); //O codigo trava a execução pra receber;
+      josegay.atual = {2,4};
+      hetero.destino = procuraMelhorPosicao(hetero.atual, josegay.atual);
+     // enviaPosicao(hetero.destino);
+      movimentaCarrinho(hetero);
+      Serial.print("Hetero atual: ");
+      Serial.print(hetero.atual.linha);
+      Serial.print(",");
+      Serial.print(hetero.atual.coluna);
+      Serial.print("Hetero destino: ");
+      Serial.print(hetero.destino.linha);
+      Serial.print(",");
+      Serial.println(hetero.destino.coluna);   
+      Serial.println("-----------------------------------------");
+      Serial.print("Josegay atual: ");
+      Serial.print(josegay.atual.linha);
+      Serial.print(",");
+      Serial.print(josegay.atual.coluna);
+      robot_stop(0);
+      delay(500);
     }
   } else {
     if (++leituras_reta == 15) {
@@ -520,7 +528,10 @@ Posicao procuraMelhorPosicao(Posicao minha, Posicao inimigo) {
       melhor = {minha.linha, minha.coluna + 1};
     }
   }
-
+  Serial.print("Melhor posicao:");
+  Serial.print(melhor.linha);
+  Serial.print(",");
+  Serial.println(melhor.coluna);
   return melhor;
 }
 
@@ -537,12 +548,64 @@ boolean posicaoValida(Posicao p) {
   return p.linha <= CAMPO.linha && p.linha > 0 && p.coluna <= CAMPO.coluna && p.coluna > 0;
 }
 
+boolean recebePosicao(){
+  int x = 0;
+  josegay.atual.linha = 0;
+  josegay.atual.coluna = 0;
+  while(josegay.atual.linha < 1 || josegay.atual.coluna < 1){
+     if ((x = mySerial.read()) < 30 && x > 20){
+       josegay.atual.coluna = x;
+     }
+     if ((x = mySerial.read()) > 30){
+       josegay.atual.linha = x;
+     }
+  }
+  return true;
+}
+
+
 int verificaDiferenca(Posicao minha, Posicao destino) {
   return abs((destino.linha - minha.linha)) + abs((destino.coluna - minha.coluna));
 }
 
-void movimentaDestino(Posicao p){
-  
+void movimentaCarrinho(Carrinho c) {
+  if (c.eixo == 'L' && c.atual.linha != c.destino.linha) {
+    if (c.atual.linha > c.destino.linha) {
+      c.eixo = 'N';
+      direcao_caso_cruzamento(esquerda);
+    } else {
+      c.eixo = 'S';
+      direcao_caso_cruzamento(direita);
+    }
+  } else if (c.eixo = 'O' && c.atual.linha != c.destino.linha) {
+    if (c.atual.linha < c.destino.linha) {
+      c.eixo = 'N';
+      direcao_caso_cruzamento(esquerda);
+    } else {
+      c.eixo = 'S';
+      direcao_caso_cruzamento(direita);
+    }
+  } else if (c.eixo = 'S' && c.atual.coluna != c.destino.coluna) {
+    if (c.atual.coluna > c.destino.coluna) {
+      c.eixo = 'L';
+      direcao_caso_cruzamento(esquerda);
+    } else {
+      c.eixo = 'O';
+      direcao_caso_cruzamento(direita);
+    }
+  } else if (c.eixo = 'N' && c.atual.coluna != c.destino.coluna) {
+    if (c.atual.coluna < c.destino.coluna) {
+      c.eixo = 'L';
+      direcao_caso_cruzamento(esquerda);
+    } else {
+      c.eixo = 'O';
+      direcao_caso_cruzamento(direita);
+    }
+  } else {
+    direcao_caso_cruzamento(reto);
+  }
+  c.atual = c.destino;
+
 }
 
 
